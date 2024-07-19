@@ -11,8 +11,8 @@ const { S3Client } = require('@aws-sdk/client-s3');
 const multerS3 = require('multer-s3');
 const s3 = new S3Client({
     credentials: {
-        secretAccessKey: process.env.S3_SECRET_KEY || "AoQ8wK9Gp2lx9A5C/qlPkRr5h2QpL3c0hMqnEGad",
-        accessKeyId: process.env.S3_ACCESS_KEY || "AKIASLAJZHQ3FL2IQRCV"
+        secretAccessKey: process.env.S3_SECRET_KEY,
+        accessKeyId: process.env.S3_ACCESS_KEY,
     },
     region: "eu-north-1"
 });
