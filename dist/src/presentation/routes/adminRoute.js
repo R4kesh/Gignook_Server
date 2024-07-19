@@ -1,0 +1,30 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+// import {adminController} from "../controller/adminController/adminController"
+const adminController_1 = require("../controller/adminController/adminController");
+const adminRepository_1 = require("../../infrastructure/repository/adminRepository");
+const adminUseCase_1 = require("../../application/usecase/adminUseCase");
+const adminAuth_1 = require("../../middleware/adminAuth");
+const router = express_1.default.Router();
+const repository = new adminRepository_1.adminRepository();
+const usecase = new adminUseCase_1.adminUseCase(repository);
+const controller = new adminController_1.adminController(usecase);
+router.post('/login', controller.login.bind(controller));
+router.get('/users', adminAuth_1.authenticateAdminJwt, controller.userList.bind(controller));
+router.put('/users/:userId/:action', adminAuth_1.authenticateAdminJwt, controller.usersAction.bind(controller));
+router.get('/freelancer', adminAuth_1.authenticateAdminJwt, controller.freelancerList.bind(controller));
+router.get('/freelancer/details/:freelancerId', adminAuth_1.authenticateAdminJwt, controller.freelancerDetails.bind(controller));
+router.post('/freelancer/approve/:id', adminAuth_1.authenticateAdminJwt, controller.freelancerApproval.bind(controller));
+router.post('/freelancer/reject/:id', adminAuth_1.authenticateAdminJwt, controller.freelancerReject.bind(controller));
+router.get('/freelancers', adminAuth_1.authenticateAdminJwt, controller.freelancersList.bind(controller));
+router.put('/freelancers/:userId/:action', adminAuth_1.authenticateAdminJwt, controller.freelancersAction.bind(controller));
+router.get('/posts', adminAuth_1.authenticateAdminJwt, controller.postList.bind(controller));
+router.put('/posts/:postid/:action', adminAuth_1.authenticateAdminJwt, controller.postListUnlist.bind(controller));
+router.get('/payments', adminAuth_1.authenticateAdminJwt, controller.paymentList.bind(controller));
+router.get('/count_display', controller.countDocument.bind(controller));
+router.get('/payment_totals', controller.totalPayments.bind(controller));
+exports.default = router;
