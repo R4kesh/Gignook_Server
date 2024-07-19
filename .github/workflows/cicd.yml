@@ -3,6 +3,7 @@ name: Deploy Node Application
 on:
   push:
     branches:
+      - main
 
 
 jobs:
