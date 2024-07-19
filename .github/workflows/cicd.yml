@@ -11,12 +11,18 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
       - name: Checkout Source
+
         uses: actions/checkout@v4
       - name: Login to docker hub
+
         run: docker login -u ${{ secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD }} 
+
       - name: Build Docker Image
+
         run: docker build -t r4kesh/gignook-server .
+
       - name: Publish Image to docker hub
+
         run: docker push r4kesh/gignook-server:latest
 
   deploy:
@@ -24,6 +30,13 @@ jobs:
     runs-on: self-hosted
     steps: 
       -name: Pull image from docker hub
+
        run: docker pull r4kesh/gignook-server:latest
+
+      -name: Delete old container
+
+       run: docker rm -f nodejs-app-container 
+
       -name: Run Docker Container
-       run: docker run -d -p 5001:5001 --name nodejs-app-container -e MONGO_PASSWORD='${{ secrets.MONGO_PASSWORD }}' r4kesh/gignook-server
+
+       run: docker run -d -p 5001:5001 --name nodejs-app-container r4kesh/gignook-server:latest
