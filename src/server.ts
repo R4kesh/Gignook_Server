@@ -86,7 +86,7 @@ io.on('connection', (socket:Socket) => {
         user: { id: user?._id, firstname: user?.firstname, email: user?.email }
       });
     }
-  });
+  });    
 
 
     socket.on('disconnect', () => {

@@ -26,7 +26,7 @@ ENV HOST=smtp.gmail.com
 ENV SERVICE=gmail
 ENV EMAIL_PORT=587
 ENV SECURE=true
-ENV USER=rakeshsrakeshsrakesh2580@gmail.com
+ENV USER=rakeshsrakeshsrakesh2580@gmail.com   
 ENV PASS=rakeshsrakesh25802580D
 
 CMD ["npm","run","dev"]
