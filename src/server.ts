@@ -1,35 +1,4 @@
-// import express from "express";
-// import dotenv from "dotenv";
-// import cors from "cors";
-// // import databaseConnection from "../config/database/connection";
-// import databaseConnection from "./config/database/connection";
-// import bodyParser from "body-parser"
 
-// import userRoute from "./presentation/routes/userRoute"
-// import adminRoute from "./presentation/routes/adminRoute"
-// import freelancerRoute from "./presentation/routes/freelancerRoute"
-// dotenv.config();
-
-// const port = process.env.PORT||5001
-
-
-// const app=express()
-
-// app.use(cors());
-
-// app.use(bodyParser.json());
-// app.use(express.json());
-// databaseConnection()
-
-// app.use("/api/user",userRoute)
-// app.use("/api/admin",adminRoute)
-// app.use("/api/freelancer",freelancerRoute)
-
-
-
-// app.listen(port,()=>{
-//     console.log(`Server started on ${port}`);
-// })
 import express from "express";
 import http from 'http'
 import dotenv from "dotenv";
