@@ -130,8 +130,6 @@ io.on('connection', (socket:Socket) => {
 
   });
 
-  
-
 server.listen(port,()=>{
     console.log(`Server started on ${port}`);
 })

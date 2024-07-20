@@ -46,6 +46,7 @@ const userRoute_1 = __importDefault(require("./presentation/routes/userRoute"));
 const adminRoute_1 = __importDefault(require("./presentation/routes/adminRoute"));
 const freelancerRoute_1 = __importDefault(require("./presentation/routes/freelancerRoute"));
 const socket_io_1 = require("socket.io");
+const userModel_1 = __importDefault(require("./infrastructure/models/userModel"));
 dotenv_1.default.config();
 const port = process.env.PORT;
 const app = (0, express_1.default)();
@@ -65,54 +66,52 @@ app.use(express_1.default.json());
 app.use("/api/user", userRoute_1.default);
 app.use("/api/admin", adminRoute_1.default);
 app.use("/api/freelancer", freelancerRoute_1.default);
-let users = {};
-let chatusers = [];
+let users = [];
+const connectedUsers = {};
 exports.io.on('connection', (socket) => {
     console.log('A user connected', socket.id);
     socket.on('likePost', ({ postId, userId, names }) => {
         console.log(`User ${names} liked post ${postId}`);
         exports.io.emit(`notification_${userId}`, { postId, userId, message: `${names} Intrested in your post!` });
     });
-    socket.on("addUser", (userId) => {
-        const isUserExist = chatusers.find((user) => user.userId === userId);
-        console.log('adduser');
+    socket.on('addUser', userId => {
+        const isUserExist = users.find(user => user.userId === userId);
         if (!isUserExist) {
-            const user = { userId: userId, socktId: socket.id };
-            chatusers.push(user);
-            console.log("chatusers", chatusers);
-            exports.io.to(socket.id).emit("getUsers", chatusers);
+            const user = { userId, socketId: socket.id };
+            users.push(user);
+            exports.io.emit('getUsers', users);
+            console.log("users", users);
         }
     });
-    socket.on("sendMessage", (_a) => __awaiter(void 0, [_a], void 0, function* ({ senderId, reciverId, message, conversationId, timestamp }) {
-        const reciver = chatusers.find((user) => user.userId === reciverId);
-        const sender = chatusers.find((user) => user.userId === senderId);
-        console.log(senderId, reciverId, message, conversationId);
-        if (reciver && sender) {
-            console.log("here 1");
-            console.log("timestamp", timestamp);
-            exports.io.to(reciver.socktId).to(sender.socktId).emit("getMessage", {
+    socket.on('sendMessage', (_a) => __awaiter(void 0, [_a], void 0, function* ({ senderId, receiverId, message, conversationId }) {
+        console.log('socksenMe', senderId, receiverId, message, conversationId);
+        const receiver = users.find(user => user.userId === receiverId);
+        const sender = users.find(user => user.userId === senderId);
+        const user = yield userModel_1.default.findById(senderId);
+        console.log('sender :>> ', sender, receiver);
+        if (receiver) {
+            exports.io.to(receiver.socketId).to(sender.socketId).emit('getMessage', {
                 senderId,
                 message,
-                reciverId,
                 conversationId,
-                createdAt: timestamp
+                receiverId,
+                user: { id: user === null || user === void 0 ? void 0 : user._id, firstname: user === null || user === void 0 ? void 0 : user.firstname, email: user === null || user === void 0 ? void 0 : user.email }
             });
         }
         else {
-            if (sender) {
-                console.log("timestamp", timestamp);
-                exports.io.to(sender.socktId).emit("getMessage", {
-                    senderId,
-                    message,
-                    reciverId,
-                    conversationId,
-                    createdAt: timestamp
-                });
-            }
+            exports.io.to(sender.socketId).emit('getMessage', {
+                senderId,
+                message,
+                conversationId,
+                receiverId,
+                user: { id: user === null || user === void 0 ? void 0 : user._id, firstname: user === null || user === void 0 ? void 0 : user.firstname, email: user === null || user === void 0 ? void 0 : user.email }
+            });
         }
     }));
-    socket.off("sendMessage", (data) => {
-        console.log(data);
+    socket.on('disconnect', () => {
+        users = users.filter(user => user.socketId !== socket.id);
+        exports.io.emit('getUsers', users);
+        console.log('Client disconnected');
     });
 });
 server.listen(port, () => {

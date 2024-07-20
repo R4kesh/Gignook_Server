@@ -190,6 +190,7 @@ class freelancerController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = req.params.id;
+                console.log('save', userId);
                 const user = yield userModel_1.default.findById(userId).populate('savedPosts').exec();
                 console.log('uz', user);
                 if (!user) {
@@ -199,6 +200,21 @@ class freelancerController {
             }
             catch (error) {
                 res.status(500).json({ message: 'Error fetching posts', error });
+            }
+        });
+    }
+    unSavePost(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { id, postId } = req.params;
+                yield userModel_1.default.findByIdAndUpdate(id, { $pull: { savedPosts: postId } }, { new: true });
+                yield post_1.default.findByIdAndUpdate(postId, {
+                    $pull: { savedBy: id },
+                });
+                return res.json({ msg: 'Post unsaved successfully' });
+            }
+            catch (error) {
+                res.status(500).json({ message: 'Error in unSave posts', error });
             }
         });
     }

@@ -462,25 +462,13 @@ class userController {
             try {
                 const userId = req.params.id;
                 const conversations = yield conversation_1.default.find({ members: { $in: [userId] } });
-                console.log('co', conversations);
-                const conversationData = Promise.all(conversations.map((conversation) => __awaiter(this, void 0, void 0, function* () {
+                const conversationUserData = Promise.all(conversations.map((conversation) => __awaiter(this, void 0, void 0, function* () {
                     const receiverId = conversation.members.find((member) => member !== userId);
                     const user = yield userModel_1.default.findById(receiverId);
-                    console.log('usr', user);
-                    return {
-                        user: {
-                            id: user === null || user === void 0 ? void 0 : user._id,
-                            email: user === null || user === void 0 ? void 0 : user.email,
-                            username: user === null || user === void 0 ? void 0 : user.firstname,
-                            profilePhoto: user === null || user === void 0 ? void 0 : user.profilePicture
-                        },
-                        conversationId: conversation._id,
-                        lastmessage: conversation.lastMessage,
-                        lastMessagedTime: conversation.lastMessagedTime,
-                    };
+                    return { user: { receiverId: user === null || user === void 0 ? void 0 : user._id, email: user === null || user === void 0 ? void 0 : user.email, firstname: user === null || user === void 0 ? void 0 : user.firstname }, conversationId: conversation._id };
                 })));
-                if (conversationData) {
-                    return res.status(200).json(yield conversationData);
+                if (conversationUserData) {
+                    return res.status(200).json(yield conversationUserData);
                 }
                 else {
                     return res.status(400).json({ success: false, messsage: 'Cannot find the user' });
@@ -494,15 +482,14 @@ class userController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = req.params.id;
-                console.log('apra', userId);
                 const users = yield userModel_1.default.find({ $and: [{ _id: { $ne: userId } }, { isFreelancer: true }
                     ]
                 });
-                const usersData = yield Promise.all(users.map((user) => __awaiter(this, void 0, void 0, function* () {
+                const usersData = Promise.all(users.map((user) => __awaiter(this, void 0, void 0, function* () {
                     return { user: { email: user.email, fullName: user.firstname, receiverId: user._id, profilePicture: user.profilePicture } };
                 })));
                 if (usersData) {
-                    return res.status(200).json(usersData);
+                    return res.status(200).json(yield usersData);
                 }
                 else {
                     return res.status(400).json({ success: false, messsage: 'Cannot find the user' });
@@ -515,59 +502,33 @@ class userController {
     messageConversations(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('pr', req.params);
-                const checkMessages = (conversationId, senderId, receiverId) => __awaiter(this, void 0, void 0, function* () {
-                    console.log(conversationId, 'conversationIdz');
-                    console.log('rec', receiverId);
-                    console.log('se', senderId);
+                const checkMessages = (conversationId) => __awaiter(this, void 0, void 0, function* () {
+                    console.log(conversationId, 'conversationId');
                     const messages = yield messages_1.default.find({ conversationId });
-                    console.log('mezz', messages);
                     const messageUserData = yield Promise.all(messages.map((message) => __awaiter(this, void 0, void 0, function* () {
                         const user = yield userModel_1.default.findById(message.senderId);
-                        return { message: message, user: user };
+                        return { user: { id: user === null || user === void 0 ? void 0 : user._id, email: user === null || user === void 0 ? void 0 : user.email, fullName: user === null || user === void 0 ? void 0 : user.firstname }, message: message.message };
                     })));
-                    console.log('messdata', messageUserData);
-                    const receiverDetails = yield userModel_1.default.findById(receiverId);
-                    res.status(200).json({
-                        message: messageUserData,
-                        conversationId: conversationId,
-                        senderId: senderId,
-                        receiverId: receiverId,
-                        receiverDetails: receiverDetails
-                    });
+                    console.log('messada', messageUserData);
+                    return res.status(200).json(messageUserData);
                 });
                 const conversationId = req.params.conversationId;
-                const senderId = req.params.senderId;
-                const receiverId = req.params.reciverId;
-                console.log('con', conversationId, 'sen', senderId, 'rec', receiverId);
+                console.log('CONID', conversationId);
                 if (conversationId === 'new') {
-                    const checkConversation = yield conversation_1.default.find({
-                        members: { $all: [senderId, receiverId] },
-                    });
-                    console.log('chec', checkConversation);
+                    const checkConversation = yield conversation_1.default.find({ members: { $all: [req.query.senderId, req.query.receiverId] } });
+                    console.log('check', checkConversation);
                     if (checkConversation.length > 0) {
-                        yield checkMessages(checkConversation[0]._id, senderId, receiverId);
-                        console.log("2");
+                        checkMessages(checkConversation[0]._id);
                     }
                     else {
-                        console.log("3");
-                        const receiverDetails = yield userModel_1.default.findById(receiverId);
-                        const allData = {
-                            receiverDetails,
-                            receiverId,
-                            senderId,
-                            message: []
-                        };
-                        return res.status(200).json(allData);
+                        return res.status(200).json([]);
                     }
                 }
                 else {
-                    yield checkMessages(conversationId, senderId, receiverId);
+                    checkMessages(conversationId);
                 }
             }
             catch (error) {
-                console.error('Server error:', error);
-                res.status(500).json({ error: 'Internal server error' });
             }
         });
     }
@@ -576,40 +537,24 @@ class userController {
             try {
                 console.log('messageeee');
                 console.log('body', req.body);
-                const { conversationId, senderId, message, reciverId, timestamp } = req.body;
+                const { conversationId, senderId, message, receiverId = '' } = req.body;
                 if (!senderId || !message)
                     return res.status(400).send('Please fill all required fields');
-                if (conversationId === 'new' && reciverId) {
-                    const newCoversation = new conversation_1.default({ members: [senderId, reciverId], lastMessage: message,
-                        lastMessagedTime: timestamp });
+                if (conversationId === 'new' && receiverId) {
+                    const newCoversation = new conversation_1.default({ members: [senderId, receiverId] });
                     yield newCoversation.save();
-                    const newMessage = new messages_1.default({ conversationId: newCoversation._id, senderId, message, receiverId: reciverId,
-                        createdAt: timestamp });
+                    const newMessage = new messages_1.default({ conversationId: newCoversation._id, senderId, message });
                     yield newMessage.save();
-                    const reciverDetails = yield userModel_1.default.findById(reciverId);
-                    console.log('recevede', reciverDetails);
-                    console.log('conv', newCoversation._id);
-                    console.log('sen', senderId);
-                    console.log('recieverid', reciverId);
-                    console.log('time', timestamp);
-                    return res.status(200).json({ messsage: "Message sent successfully", conversationId: newCoversation._id, senderId: senderId, reciverId: reciverId, reciverDetails, createdAt: timestamp });
+                    return res.status(200).send(newMessage);
                 }
-                else if (!conversationId && !reciverId) {
+                else if (!conversationId && !receiverId) {
                     return res.status(400).send('Please fill all required fields');
                 }
-                const newMessage = new messages_1.default({ conversationId, senderId, message, receiverId: reciverId, createdAt: timestamp });
+                const newMessage = new messages_1.default({ conversationId, senderId, message });
                 yield newMessage.save();
-                const conversationUpdate = yield conversation_1.default.findByIdAndUpdate(conversationId, {
-                    $set: {
-                        lastMessage: message,
-                        lastMessagedTime: timestamp
-                    }
-                });
-                const reciverDetails = yield userModel_1.default.findById(reciverId.receiverId);
-                res.status(200).json({ message: "Message sent successfully", conversationId: conversationId, senderId: senderId, reciverId: reciverId, reciverDetails, createdAt: timestamp });
+                return res.status(200).send(newMessage);
             }
             catch (error) {
-                console.log(error, "Error");
             }
         });
     }

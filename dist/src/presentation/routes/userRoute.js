@@ -34,6 +34,6 @@ router.get('/paymentHistory/:id', controller.paymentHistory.bind(controller));
 router.get('/name/:id', controller.findUser.bind(controller));
 router.get('/conversations/:id', controller.conversation.bind(controller));
 router.get('/users/:id', controller.users.bind(controller));
-router.get('/message/:conversationId/:senderId/:reciverId', controller.messageConversations.bind(controller));
+router.get('/message/:conversationId', controller.messageConversations.bind(controller));
 router.post('/message', controller.message.bind(controller));
 exports.default = router;

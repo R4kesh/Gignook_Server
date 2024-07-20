@@ -22,6 +22,7 @@ router.get('/posts', controller.listPost.bind(controller));
 router.post('/posts/:id/interest', controller.postInterest.bind(controller));
 router.post('/posts/:id/save', controller.savePost.bind(controller));
 router.get('/saved/posts/:id', controller.savedPost.bind(controller));
+router.delete('/unsave/posts/:id/:postId', controller.unSavePost.bind(controller));
 router.post('/postWork/:id', FileUpload_1.default.array('files', 2), controller.postWork.bind(controller));
 router.put('/postWorkDatas/:id/:postId', controller.postWorkDatas.bind(controller));
 router.get('/workList/:userId', controller.workList.bind(controller));
