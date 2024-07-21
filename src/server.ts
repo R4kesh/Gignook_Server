@@ -23,11 +23,20 @@ export const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
     origin:process.env.BASE_URL,
-    // credentials: true,
+    credentials: true,
   },
 });
 
-app.use(cors());
+// app.use(cors());
+app.use(
+  cors({
+    origin: `${process.env.BASE_URL}`,  
+    credentials: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    optionsSuccessStatus: 204,
+    allowedHeaders: "Content-Type,Authorization",
+  })
+)
 
 app.use(bodyParser.json());
 app.use(cookieParser());
