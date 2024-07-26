@@ -40,6 +40,7 @@ const messageSchema: Schema<IMessage> = new Schema({
 createdAt:{
     type:Date,
     required:false
+    
 },
 attachments: { type: [attachmentSchema], required: false },
 });
