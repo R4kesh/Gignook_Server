@@ -15,6 +15,7 @@ interface PostDocument extends Document {
     savedBy: mongoose.Types.ObjectId[];
 }
 
+
 const postSchema = new Schema<PostDocument>({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'userCollection', required: true },
     title: { type: String },
