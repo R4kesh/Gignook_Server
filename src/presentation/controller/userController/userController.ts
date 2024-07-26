@@ -519,6 +519,7 @@ async conversation(req:Request,res:Response,next:NextFunction){
           const user = await User.findById(receiverId);
           return { user: { receiverId: user?._id, email: user?.email, firstname: user?.firstname,profilePicture:user?.profilePicture }, conversationId: conversation._id,
           lastmessage:conversation.lastMessage,lastMessagedTime:conversation.lastMessagedTime
+          
          }
       }))
       
