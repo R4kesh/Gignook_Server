@@ -13,6 +13,7 @@ export class freelancerController{
     constructor(freelancerusecase:IfreelancerControl){
         this.freelancerusecase=freelancerusecase
     }
+    
   
 async  kycDetails(req:Request,res:Response,next:NextFunction){
     try {
