@@ -27,16 +27,16 @@ export const io = new Server(server, {
   },
 });
 
-// app.use(cors());
-app.use(
-  cors({
-    origin: `${process.env.BASE_URL}`,  
-    credentials: true,
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    optionsSuccessStatus: 204,
-    allowedHeaders: "Content-Type,Authorization",
-  })
-)
+app.use(cors());
+// app.use(
+//   cors({
+//     origin: `${process.env.BASE_URL}`,  
+//     credentials: true,
+//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//     optionsSuccessStatus: 204,
+//     allowedHeaders: "Content-Type,Authorization",
+//   })
+// )
 
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -70,8 +70,8 @@ io.on('connection', (socket:Socket) => {
       }
   });
 
-  socket.on('sendMessage', async ({ senderId, receiverId, message, conversationId }) => {
-    console.log('socksenMe',senderId, receiverId, message, conversationId );
+  socket.on('sendMessage', async ({ senderId, receiverId, message, conversationId,timestamp }) => {
+    console.log('socksenMe',senderId, receiverId, message, conversationId, );
    
     const receiver: { userId: string, socketId: string } | undefined = users.find(user => user.userId === receiverId);
     const sender: { userId: string, socketId: string } | undefined = users.find(user => user.userId === senderId);
@@ -84,7 +84,8 @@ io.on('connection', (socket:Socket) => {
         message,
         conversationId,
         receiverId,
-        user: { id: user?._id, firstname: user?.firstname, email: user?.email }
+        user: { id: user?._id, firstname: user?.firstname, email: user?.email },
+        createdAt:timestamp
       });
     } else {
       io.to(sender!.socketId).emit('getMessage', {
@@ -92,7 +93,8 @@ io.on('connection', (socket:Socket) => {
         message,
         conversationId,
         receiverId,
-        user: { id: user?._id, firstname: user?.firstname, email: user?.email }
+        user: { id: user?._id, firstname: user?.firstname, email: user?.email },
+        createdAt:timestamp
       });
     }
   });    

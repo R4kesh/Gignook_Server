@@ -4,7 +4,6 @@ import { userRepository } from "../../infrastructure/repository/userRepository";
 import { userUseCase } from "../../application/usecase/userUseCase";
 import authenticateUserJwt from "../../middleware/userAuth";
 import uploadMiddleWare from "../../middleware/FileUpload";
-import Conversation from "../../infrastructure/models/conversation";
 const router=express.Router()
 
 const repository=new userRepository()
@@ -42,5 +41,6 @@ router.get('/conversations/:id',controller.conversation.bind(controller))
 router.get('/users/:id',controller.users.bind(controller))
 router.get('/message/:conversationId',controller.messageConversations.bind(controller))
 router.post('/message',controller.message.bind(controller))
+router.post('/addAttachentToChat',controller.addAttachment.bind(controller))
 
 export default router;

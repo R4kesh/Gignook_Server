@@ -30,7 +30,9 @@ export class  userRepository implements IuserRepository{
           const newUser=new User({firstname,lastname,email,password:hashedPassword,emailToken,})
           await newUser.save()
           
-          let BASE_URL=`${process.env.NEXT_PUBLIC_BASE_URL}/api/user`
+          let BASE_URL=`${process.env.PUBLIC_BASE_URL}/api/user`
+          console.log('base',BASE_URL);
+          
     
           const verificationLink = `${BASE_URL}/verify?token=${emailToken}`;
                                                    

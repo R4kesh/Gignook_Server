@@ -206,10 +206,10 @@ async  workImage(req:Request,res:Response,next:NextFunction){
         try {
            
             const  userId  = req.params.id;
-            console.log('save',userId);
+            
             
             const user = await User.findById(userId).populate('savedPosts').exec()
-            console.log('uz',user);
+          
             
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });

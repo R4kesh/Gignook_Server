@@ -512,10 +512,14 @@ async conversation(req:Request,res:Response,next:NextFunction){
     
       const userId= req.params.id
       const conversations = await Conversation.find({ members: { $in: [userId] } });
+      console.log('backcon',conversations);
+      
       const conversationUserData = Promise.all(conversations.map(async (conversation) => {
           const receiverId = conversation.members.find((member) => member !== userId);
           const user = await User.findById(receiverId);
-          return { user: { receiverId: user?._id, email: user?.email, firstname: user?.firstname }, conversationId: conversation._id }
+          return { user: { receiverId: user?._id, email: user?.email, firstname: user?.firstname,profilePicture:user?.profilePicture }, conversationId: conversation._id,
+          lastmessage:conversation.lastMessage,lastMessagedTime:conversation.lastMessagedTime
+         }
       }))
       
       
@@ -568,12 +572,13 @@ async messageConversations(req:Request,res:Response,next:NextFunction){
     const checkMessages = async (conversationId: any) => {
       console.log(conversationId, 'conversationId')
       const messages = await Message.find({ conversationId });
+     
+      
       const messageUserData =await Promise.all(messages.map(async (message) => {
           const user = await User.findById(message.senderId);
 
-          return { user: { id: user?._id, email: user?.email, fullName: user?.firstname }, message: message.message }
+          return { user: { id: user?._id, email: user?.email, fullName: user?.firstname }, message: message.message,createdAt:message.createdAt }
       }));
-      console.log('messada',messageUserData);
       
      return res.status(200).json( messageUserData);
   }
@@ -604,19 +609,30 @@ async message(req:Request,res:Response,next:NextFunction){
     
     
 
-    const { conversationId, senderId, message, receiverId = '' } = req.body;
+    const { conversationId, senderId, message, receiverId = '',timestamp } = req.body;
+    console.log('timeee',timestamp);
+    
     if (!senderId || !message) return res.status(400).send('Please fill all required fields')
     if (conversationId === 'new' && receiverId) {
-        const newCoversation = new Conversation({ members: [senderId, receiverId] });
+        const newCoversation = new Conversation({ members: [senderId, receiverId],lastMessage:message,
+          lastMessagedTime:timestamp });
         await newCoversation.save();
-        const newMessage = new Message({ conversationId: newCoversation._id, senderId, message });
-        await newMessage.save();
+        const newMessage = new Message({ conversationId: newCoversation._id, senderId, message,receiverId,createdAt:timestamp });
+        const save=await newMessage.save();
+        console.log('save',save);
+        
         return res.status(200).send(newMessage);
     } else if (!conversationId && !receiverId) {
         return res.status(400).send('Please fill all required fields')
     }
-    const newMessage = new Message({ conversationId, senderId, message });
+    const newMessage = new Message({ conversationId, senderId, message,receiverId,createdAt:timestamp });
     await newMessage.save();
+    const conversationUpdate=await Conversation.findByIdAndUpdate(conversationId,{
+      $set:{
+        lastMessage:message,
+        lastMessagedTime:timestamp
+      }
+    })
    return res.status(200).send(newMessage);
     
     
@@ -625,6 +641,31 @@ async message(req:Request,res:Response,next:NextFunction){
       
   }
 }
+
+
+async addAttachment(req:Request,res:Response,next:NextFunction){
+try {
+  console.log('attacjh');
+  
+  const {senderId,reciverId,conversationId,message,timestamp} = req.body
+  console.log("chat attachements",req.file);
+
+  const newMessage = new Message({
+     conversationId, senderId, message,reciverId:reciverId,createdAt:timestamp 
+    });
+
+    await newMessage.save()
+
+    return res.status(201).json(newMessage)
+  
+} catch (error:any) {
+  console.log('err',error);
+  
+}
+
+}
+
+
 
 
 
